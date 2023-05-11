@@ -1,0 +1,151 @@
+3.
+Mapper code:
+
+
+#!/usr/bin/env python
+
+import sys
+
+# Input format: "GRE Score, TOEFL Score, University Rating, SOP, LOR, CGPA, Research, Chance of Admit"
+for line in sys.stdin:
+    data = line.strip().split(',')
+    # Extract the values for GRE Score, TOEFL Score, SOP, and Chance of Admit
+    gre_score, toefl_score, sop, chance_of_admit = data[0], data[1], data[3], data[7]
+    # Check if SOP=4 and Chance of Admit is a float value
+    if sop == '4' and chance_of_admit.replace('.', '', 1).isdigit():
+        # Output the Chance of Admit as the key and the entire line as the value
+        print('%s\t%s' % (chance_of_admit, line.strip()))
+
+Reducer code:
+
+
+#!/usr/bin/env python
+
+import sys
+
+top_10 = []
+for line in sys.stdin:
+    # Split the input into the Chance of Admit and the rest of the line
+    chance_of_admit, values = line.strip().split('\t', 1)
+    # Append the Chance of Admit and the entire line to the top_10 list
+    top_10.append((float(chance_of_admit), values))
+    # Sort the top_10 list by Chance of Admit in descending order
+    top_10.sort(key=lambda x: x[0], reverse=True)
+    # Keep only the top 10 elements in the top_10 list
+    top_10 = top_10[:10]
+
+# Output the top 10 applicants with SOP=4
+for value in top_10:
+    print(value[1])
+
+2.
+Mapper code:
+
+
+#!/usr/bin/env python
+
+import sys
+
+# Input format: "GRE Score, TOEFL Score, University Rating, SOP, LOR, CGPA, Research, Chance of Admit"
+for line in sys.stdin:
+    data = line.strip().split(',')
+    # Extract the values for GRE Score and Chance of Admit
+    gre_score, chance_of_admit = data[0], data[7]
+    # Check if GRE Score is an integer and Chance of Admit is a float value
+    if gre_score.isdigit() and chance_of_admit.replace('.', '', 1).isdigit():
+        gre_score = int(gre_score)
+        chance_of_admit = float(chance_of_admit)
+        # Check if Chance of Admit > 0.8 and GRE Score > 320
+        if chance_of_admit > 0.8 and gre_score > 320:
+            # Output a key-value pair where the key is a constant string and the value is 1
+            print('count\t1')
+
+Reducer code:
+
+
+#!/usr/bin/env python
+
+import sys
+
+count = 0
+for line in sys.stdin:
+    # Increment the count for each key-value pair
+    count += int(line.strip())
+
+# Output the final count
+print('Number of students:', count)
+
+1.
+Mapper function:
+
+#!/usr/bin/env python
+import sys
+
+for line in sys.stdin:
+    # Split the line into fields
+    fields = line.strip().split(',')
+
+    # Extract relevant fields
+    research = fields[3]
+    gre_score = float(fields[1])
+    toefl_score = float(fields[2])
+    gpa = float(fields[4])
+
+    # Emit key-value pairs
+    if research == "1":
+        # For research experience
+        print('research_experience', gpa, gre_score, toefl_score)
+    else:
+        # For no research experience
+        print('no_research_experience', gpa, gre_score, toefl_score)
+
+Reducer function:
+
+#!/usr/bin/env python
+import sys
+
+# Initialize variables
+total_gpa_research = 0
+total_gre_research = 0
+total_toefl_research = 0
+total_gpa_no_research = 0
+total_gre_no_research = 0
+total_toefl_no_research = 0
+count_research = 0
+count_no_research = 0
+
+for line in sys.stdin:
+    # Split the line into fields
+    fields = line.strip().split()
+
+    # Extract key and values
+    key = fields[0]
+    gpa = float(fields[1])
+    gre_score = float(fields[2])
+    toefl_score = float(fields[3])
+
+    # Calculate totals and counts for each key
+    if key == 'research_experience':
+        total_gpa_research += gpa
+        total_gre_research += gre_score
+        total_toefl_research += toefl_score
+        count_research += 1
+    elif key == 'no_research_experience':
+        total_gpa_no_research += gpa
+        total_gre_no_research += gre_score
+        total_toefl_no_research += toefl_score
+        count_no_research += 1
+
+# Calculate averages
+avg_gpa_research = total_gpa_research / count_research
+avg_gre_research = total_gre_research / count_research
+avg_toefl_research = total_toefl_research / count_research
+avg_gpa_no_research = total_gpa_no_research / count_no_research
+avg_gre_no_research = total_gre_no_research / count_no_research
+avg_toefl_no_research = total_toefl_no_research / count_no_research
+
+# Print the results
+print("Research Experience: Avg GPA = {:.2f}, Avg GRE Score = {:.2f}, Avg TOEFL Score = {:.2f}".format(
+    avg_gpa_research, avg_gre_research, avg_toefl_research))
+print("No Research Experience: Avg GPA = {:.2f}, Avg GRE Score = {:.2f}, Avg TOEFL Score = {:.2f}".format(
+    avg_gpa_no_research, avg_gre_no_research, avg_toefl_no_research))
