@@ -1,0 +1,168 @@
+1.
+import sys
+
+def mapper(line):
+    data = line.strip().split(',')
+    gre_score = int(data[1])
+    toefl_score = int(data[2])
+    cgpa = float(data[3])
+    research = int(data[4])
+
+    if research == 1:
+        yield 'Research Experience', (cgpa, gre_score, toefl_score)
+    else:
+        yield 'No Research Experience', (cgpa, gre_score, toefl_score)
+
+def reducer(key, values):
+    total_cgpa = total_gre_score = total_toefl_score = count = 0
+    for value in values:
+        total_cgpa += value[0]
+        total_gre_score += value[1]
+        total_toefl_score += value[2]
+        count += 1
+    return key, (total_cgpa/count, total_gre_score/count, total_toefl_score/count)
+
+if __name__ == '__main__':
+    # Read data from standard input and write output to standard output
+    for line in sys.stdin:
+        # Call mapper function to extract relevant information
+        key_values = mapper(line)
+
+        # Write key-value pairs to standard output
+        for key, value in key_values:
+            print(f'{key}\t{value}')
+
+    # Initialize variables for reducer
+    current_key = None
+    current_values = []
+
+    # Read key-value pairs from standard input
+    for line in sys.stdin:
+        # Split line into key and value
+        key, value = line.strip().split('\t')
+
+        # If the key has changed, call the reducer function with the previous key
+        if key != current_key:
+            if current_key:
+                result_key, result_value = reducer(current_key, current_values)
+                # Write result to standard output
+                print(f'{result_key}\t{result_value}')
+            current_key = key
+            current_values = []
+
+        # Append value to list of values for current key
+        current_values.append(eval(value))
+
+    # Call reducer function for last key
+    if current_key:
+        result_key, result_value = reducer(current_key, current_values)
+        # Write result to standard output
+        print(f'{result_key}\t{result_value}')
+
+2.
+import sys
+
+def mapper(line):
+    data = line.strip().split(',')
+    gre_score = int(data[1])
+    chance_of_admission = float(data[5])
+
+    if gre_score > 320 and chance_of_admission > 0.8:
+        yield 'Number of students with GRE score > 320 and admission chance > 0.8', 1
+
+def reducer(key, values):
+    total_count = 0
+    for value in values:
+        total_count += value
+    return key, total_count
+
+if __name__ == '__main__':
+    # Read data from standard input and write output to standard output
+    for line in sys.stdin:
+        # Call mapper function to extract relevant information
+        key_values = mapper(line)
+
+        # Write key-value pairs to standard output
+        for key, value in key_values:
+            print(f'{key}\t{value}')
+
+    # Initialize variables for reducer
+    current_key = None
+    current_values = []
+
+    # Read key-value pairs from standard input
+    for line in sys.stdin:
+        # Split line into key and value
+        key, value = line.strip().split('\t')
+
+        # If the key has changed, call the reducer function with the previous key
+        if key != current_key:
+            if current_key:
+                result_key, result_value = reducer(current_key, current_values)
+                # Write result to standard output
+                print(f'{result_key}\t{result_value}')
+            current_key = key
+            current_values = []
+
+        # Append value to list of values for current key
+        current_values.append(int(value))
+
+    # Call reducer function for last key
+    if current_key:
+        result_key, result_value = reducer(current_key, current_values)
+        # Write result to standard output
+        print(f'{result_key}\t{result_value}')
+3.
+import sys
+
+def mapper(line):
+    data = line.strip().split(',')
+    sop = int(data[2])
+    if sop == 4:
+        yield 'SOP=4', data
+
+def reducer(key, values):
+    applicants = []
+    for value in values:
+        applicants.append(value)
+    applicants.sort(key=lambda x: float(x[5]), reverse=True)
+    top_10 = applicants[:10]
+    return key, top_10
+
+if __name__ == '__main__':
+    # Read data from standard input and write output to standard output
+    for line in sys.stdin:
+        # Call mapper function to extract relevant information
+        key_values = mapper(line)
+
+        # Write key-value pairs to standard output
+        for key, value in key_values:
+            print(f'{key}\t{value}')
+
+    # Initialize variables for reducer
+    current_key = None
+    current_values = []
+
+    # Read key-value pairs from standard input
+    for line in sys.stdin:
+        # Split line into key and value
+        key, value = line.strip().split('\t')
+
+        # If the key has changed, call the reducer function with the previous key
+        if key != current_key:
+            if current_key:
+                result_key, result_value = reducer(current_key, current_values)
+                # Write result to standard output
+                print(f'{result_key}\t{result_value}')
+            current_key = key
+            current_values = []
+
+        # Append value to list of values for current key
+        current_values.append(value.split(','))
+
+    # Call reducer function for last key
+    if current_key:
+        result_key, result_value = reducer(current_key, current_values)
+        # Write result to standard output
+        print(f'{result_key}\t{result_value}')
+

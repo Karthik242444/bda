@@ -1,0 +1,11 @@
+1.
+pokemon_data = LOAD 'pokemon.csv' USING PigStorage(',') AS (Name:chararray, Type1:chararray, Type2:chararray, HP:int, Attack:int, Defense:int, Generation:int);
+generation_count = GROUP pokemon_data BY Generation;
+pokemon_count = FOREACH generation_count GENERATE group AS generation, COUNT(pokemon_data) AS count;
+DUMP pokemon_count;
+
+2.
+pokemon_data = LOAD 'pokemon.csv' USING PigStorage(',') AS (Name:chararray, Type1:chararray, Type2:chararray, HP:int, Attack:int, Defense:int, Generation:int);
+top_pokemon = ORDER pokemon_data BY Attack DESC, Defense DESC;
+top_10_pokemon = LIMIT top_pokemon 10;
+DUMP top_10_pokemon;
