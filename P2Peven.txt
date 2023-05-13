@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char* argv[]) {
+    MPI_Init(&argc, &argv);
+
+    int num_procs, rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // Matrix dimensions
+    const int N = 4; // Assuming square matrix of size NxN
+
+    // Root process reads the input matrix
+    int A[N][N];
+    int local_A[N];
+
+    if (rank == 0) {
+        printf("Input Matrix A:\n");
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                A[i][j] = i * N + j + 1;
+                printf("%d ", A[i][j]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
+    // Scatter one row of matrix A to each process
+    MPI_Status status;
+    if (rank == 0) {
+        for (int i = 0; i < num_procs - 1; i++) {
+            int dest_rank = i + 1;
+            MPI_Send(&A[i], N, MPI_INT, dest_rank, 0, MPI_COMM_WORLD);
+        }
+    }
+    else {
+        int src_rank = 0;
+        MPI_Recv(local_A, N, MPI_INT, src_rank, 0, MPI_COMM_WORLD, &status);
+    }
+
+    // Process the local row
+    for (int i = 0; i < N; i++) {
+        local_A[i] = (local_A[i] % 2 == 0) ? 0 : 1;
+    }
+
+    // Gather the results to the root process
+    if (rank == 0) {
+        for (int i = 0; i < num_procs - 1; i++) {
+            int src_rank = i + 1;
+            MPI_Recv(&A[i + 1], N, MPI_INT, src_rank, 1, MPI_COMM_WORLD, &status);
+        }
+    }
+    else {
+        int dest_rank = 0;
+        MPI_Send(local_A, N, MPI_INT, dest_rank, 1, MPI_COMM_WORLD);
+    }
+
+    if (rank == 0) {
+        printf("Processed Matrix A:\n");
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                printf("%d ", A[i][j]);
+            }
+            printf("\n");
+        }
+    }
+
+    MPI_Finalize();
+    return 0;
+}
